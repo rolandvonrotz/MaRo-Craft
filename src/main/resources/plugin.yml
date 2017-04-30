@@ -1,0 +1,10 @@
+# Copyright (C) 2017 Rotzloch (rotzloch@vonrotz-beutter.ch)
+name: MaRo-Craft
+author: Rotzloch
+main: me.rotzloch.marocraft.Main
+version: 1.1-SNAPSHOT
+depend: [WorldGuard, WorldEdit]
+commands:
+  land:
+    description: Hauptbefehl fuer GSManagement
+    usage: Gib /land help ein, um mehr Informationen zu bekommen.
