@@ -6,7 +6,6 @@
  */
 package me.rotzloch.marocraft.util;
 
-import me.rotzloch.marocraft.util.Translation;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import java.util.logging.Level;
@@ -88,4 +87,10 @@ public class Helper {
     public static RegionManager getRegionManager(World world) {
         return Helper.getWorldGuard().getRegionManager(world);
     }
+
+    //region Tasks
+    public static void StartDelayedTask(Runnable run, long timeTicks) {
+        PLUGIN.getServer().getScheduler().runTaskLater(PLUGIN, run, timeTicks);
+    }
+    //endregion
 }

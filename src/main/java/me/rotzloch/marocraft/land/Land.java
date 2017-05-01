@@ -16,6 +16,7 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import me.rotzloch.marocraft.tasks.MarkerTask;
 import me.rotzloch.marocraft.util.Helper;
 import me.rotzloch.marocraft.util.NameFetcher;
 import org.bukkit.ChatColor;
@@ -56,6 +57,7 @@ public class Land {
         }
         setBuyFlagsAndOwner();
         Helper.getRegionManager(world).addRegion(region);
+        setCorners(50);
         player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Grundstück '%s' erfolgreich gekauft.\n%s %s wurden deinem Konto abgezogen!", regionName, "100", "MaRo-Coins"));
     }
 
@@ -65,6 +67,7 @@ public class Land {
             return;
         }
         Helper.getRegionManager(world).removeRegion(regionName);
+        setCorners(76);
         player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Grundstück '%s' erfolgreich verkauft.\n%s %s wurden deinem Konto gutgeschrieben!", regionName, "100", "MaRo-Coins"));
     }
 
@@ -185,5 +188,10 @@ public class Land {
 
     private boolean isOwner() {
         return region.getOwners().contains(localPlayer);
+    }
+
+    private void setCorners(int cornerID) {
+        MarkerTask task = new MarkerTask(world, chunk, cornerID);
+        Helper.StartDelayedTask(task, 1);
     }
 }
