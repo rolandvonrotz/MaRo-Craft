@@ -6,17 +6,14 @@
  */
 package me.rotzloch.marocraft.util;
 
-import com.sk89q.worldguard.util.profile.resolver.BukkitPlayerService;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
-import me.rotzloch.marocraft.Helper;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;

@@ -10,16 +10,13 @@ import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.domains.DefaultDomain;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
-import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.StateFlag.State;
 import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import me.rotzloch.marocraft.Helper;
-import me.rotzloch.marocraft.Translation;
+import me.rotzloch.marocraft.util.Helper;
 import me.rotzloch.marocraft.util.NameFetcher;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
@@ -58,20 +55,22 @@ public class Land {
             return;
         }
         setBuyFlagsAndOwner();
-        Helper.RegionManager(world).addRegion(region);
+        Helper.getRegionManager(world).addRegion(region);
+        player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Grundstück '%s' erfolgreich gekauft.\n%s %s wurden deinem Konto abgezogen!", regionName, "100", "MaRo-Coins"));
     }
 
     public void Sell() {
         if (!alreadyExist() || !isOwner()) {
-            // TODO: Message
+            player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Du kannst nur Grundstücke verkaufen, die dir gehören!"));
             return;
         }
-        Helper.RegionManager(world).removeRegion(regionName);
+        Helper.getRegionManager(world).removeRegion(regionName);
+        player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Grundstück '%s' erfolgreich verkauft.\n%s %s wurden deinem Konto gutgeschrieben!", regionName, "100", "MaRo-Coins"));
     }
 
     public void Info() {
         if (!alreadyExist()) {
-            player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Grundstück %s gehört niemandem.\nDu kannst es kaufen für %s %s!", regionName, "1", "MaRo-Coin"));
+            player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Grundstück %s gehört niemandem.\nDu kannst es kaufen für %s %s!", regionName, "100", "MaRo-Coins"));
             return;
         }
         String text = Helper.TRANSLATE.getText("Grundstück '%s'\nBesitzer: %s\nMitglieder: %s\nFlags: %s->%s, %s->%s",
@@ -86,24 +85,28 @@ public class Land {
     public void Lock() {
         if (alreadyExist() && isOwner()) {
             region.setFlag(DefaultFlag.USE, State.DENY);
+            player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Grundstück '%s' wurde gesperrt.", regionName));
         }
     }
 
     public void Unlock() {
         if (alreadyExist() && isOwner()) {
             region.setFlag(DefaultFlag.USE, State.ALLOW);
+            player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Grundstück '%s' wurde entsperrt.", regionName));
         }
     }
 
     public void AddMember(String playerName) {
         if (alreadyExist() && isOwner()) {
             region.getMembers().addPlayer(playerName);
+            player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Spieler '%s' wurde dem Grundstück '%s' hinzugefügt.", playerName, regionName));
         }
     }
 
     public void RemoveMember(String playerName) {
         if (alreadyExist() && isOwner()) {
             region.getMembers().removePlayer(playerName);
+            player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Spieler '%s' wurde vom Grundstück '%s' entfernt.", playerName, regionName));
         }
     }
 
@@ -126,7 +129,7 @@ public class Land {
 
     private ProtectedRegion getRegion() {
         if (alreadyExist()) {
-            return Helper.RegionManager(world).getRegion(regionName);
+            return Helper.getRegionManager(world).getRegion(regionName);
         }
         CuboidSelection selection = new CuboidSelection(world,
                 chunk.getBlock(0, 0, 0).getLocation(),
@@ -137,7 +140,7 @@ public class Land {
     }
 
     private boolean alreadyExist() {
-        return Helper.RegionManager(world).hasRegion(regionName);
+        return Helper.getRegionManager(world).hasRegion(regionName);
     }
 
     private boolean isOwner() {

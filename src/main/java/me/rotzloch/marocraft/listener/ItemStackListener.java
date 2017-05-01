@@ -7,7 +7,7 @@
 package me.rotzloch.marocraft.listener;
 
 import java.util.List;
-import me.rotzloch.marocraft.Helper;
+import me.rotzloch.marocraft.util.Helper;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;

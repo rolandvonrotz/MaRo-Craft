@@ -6,7 +6,7 @@
  */
 package me.rotzloch.marocraft.commands;
 
-import me.rotzloch.marocraft.Helper;
+import me.rotzloch.marocraft.util.Helper;
 import me.rotzloch.marocraft.land.Land;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
