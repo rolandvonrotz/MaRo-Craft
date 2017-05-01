@@ -6,9 +6,12 @@
  */
 package me.rotzloch.marocraft;
 
-import me.rotzloch.marocraft.util.Helper;
+import java.util.logging.Level;
 import me.rotzloch.marocraft.commands.LandCommandExecutor;
 import me.rotzloch.marocraft.listener.ItemStackListener;
+import me.rotzloch.marocraft.listener.LandListener;
+import me.rotzloch.marocraft.util.Helper;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -25,11 +28,17 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        if (Helper.Config().getBoolean("config.ItemStacker.Enabled")) {
-            Helper.RegisterListener(new ItemStackListener());
-        }
-        if (Helper.Config().getBoolean("config.Land.Enabled")) {
-            this.getCommand("land").setExecutor(new LandCommandExecutor());
+        if (Helper.setupEconomy()) {
+            if (Helper.Config().getBoolean("config.ItemStacker.Enabled")) {
+                Helper.RegisterListener(new ItemStackListener());
+            }
+            if (Helper.Config().getBoolean("config.Land.Enabled")) {
+                getCommand("land").setExecutor(new LandCommandExecutor());
+                Helper.RegisterListener(new LandListener());
+            }
+        } else {
+            Helper.LogMessage(Level.SEVERE, String.format("Disabled due to no Vault dependency found!"));
+            Bukkit.getPluginManager().disablePlugin(this);
         }
     }
 

@@ -8,14 +8,18 @@ package me.rotzloch.marocraft.util;
 
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.managers.RegionManager;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import me.rotzloch.marocraft.Main;
+import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.RegisteredServiceProvider;
 
 /**
  *
@@ -25,18 +29,19 @@ public class Helper {
 
     public static Main PLUGIN;
     public static Translation TRANSLATE;
+    public static Economy ECONOMY;
     private static Logger LOGGER;
 
     public static void setPlugin(Main plugin) {
-        Helper.PLUGIN = plugin;
-        LOGGER = Helper.PLUGIN.getLogger();
-        Helper.LoadConfig();
-        Helper.TRANSLATE = new Translation(Helper.Config().getString("config.Language"));
+        PLUGIN = plugin;
+        LOGGER = PLUGIN.getLogger();
+        LoadConfig();
+        TRANSLATE = new Translation(Config().getString("config.Language"));
     }
 
     //region Logger
     public static void LogMessage(String message) {
-        Helper.LogMessage(Level.INFO, message);
+        LogMessage(Level.INFO, message);
     }
 
     public static void LogMessage(Level level, String message) {
@@ -46,36 +51,39 @@ public class Helper {
 
     //region Configuration
     public static void LoadConfig() {
-        Helper.Config().addDefault("config.Language", "de");
+        Config().addDefault("config.Language", "de");
 
-        Helper.Config().addDefault("config.ItemStacker.Enabled", true);
-        Helper.Config().addDefault("config.ItemStacker.Radius", 5);
-        Helper.Config().addDefault("config.ItemStacker.ItemPerStack", 256);
+        Config().addDefault("config.ItemStacker.Enabled", true);
+        Config().addDefault("config.ItemStacker.Radius", 5);
+        Config().addDefault("config.ItemStacker.ItemPerStack", 256);
 
-        Helper.Config().addDefault("config.Land.Enabled", true);
+        Config().addDefault("config.Land.Enabled", true);
+        Config().addDefault("config.Land.BaseBuyPrice", 200);
+        Config().addDefault("config.Land.AddBuyPricePerGS", 50);
+        Config().addDefault("config.Land.TaxEnabled", true);
+        Config().addDefault("config.Land.TaxPerGS", 0.1);
+        Config().addDefault("config.Land.TaxTimeSeconds", 900);
+        Config().addDefault("config.Land.SellBySign", true);
+        Config().addDefault("config.Land.IgnoreWorlds", Collections.emptyList());
 
-        Helper.Config().options().copyDefaults(true);
-        Helper.PLUGIN.saveConfig();
+        Config().options().copyDefaults(true);
+        PLUGIN.saveConfig();
     }
 
     public static FileConfiguration Config() {
-        return Helper.PLUGIN.getConfig();
+        return PLUGIN.getConfig();
     }
     //endregion
 
     //region Listener
     public static void RegisterListener(Listener listener) {
-        Helper.getPluginManager().registerEvents(listener, PLUGIN);
+        Bukkit.getPluginManager().registerEvents(listener, PLUGIN);
     }
     //endregion
 
     //region PluginManager
-    public static PluginManager getPluginManager() {
-        return Helper.PLUGIN.getServer().getPluginManager();
-    }
-
     public static WorldGuardPlugin getWorldGuard() {
-        Plugin plugin = Helper.getPluginManager().getPlugin("WorldGuard");
+        Plugin plugin = Bukkit.getPluginManager().getPlugin("WorldGuard");
 
         if (plugin == null || !(plugin instanceof WorldGuardPlugin)) {
             return null;
@@ -85,12 +93,43 @@ public class Helper {
     //endregion
 
     public static RegionManager getRegionManager(World world) {
-        return Helper.getWorldGuard().getRegionManager(world);
+        return getWorldGuard().getRegionManager(world);
     }
 
     //region Tasks
     public static void StartDelayedTask(Runnable run, long timeTicks) {
-        PLUGIN.getServer().getScheduler().runTaskLater(PLUGIN, run, timeTicks);
+        Bukkit.getScheduler().runTaskLater(PLUGIN, run, timeTicks);
+    }
+    //endregion
+
+    //region Economy
+    public static boolean setupEconomy() {
+        if (Bukkit.getPluginManager().getPlugin("Vault") == null) {
+            LogMessage("No Vault Plugin found.");
+            return false;
+        }
+
+        RegisteredServiceProvider<Economy> rsp = Bukkit.getServicesManager().getRegistration(Economy.class);
+        if (rsp == null) {
+            LogMessage("No RegisteredServiceProvider found.");
+            return false;
+        }
+        ECONOMY = rsp.getProvider();
+        return true;
+    }
+
+    public static boolean hasAccount(String playerName) {
+        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(PlayerFetcher.getPlayerUniqueId(playerName));
+        if (offlinePlayer == null) {
+            return false;
+        }
+        return ECONOMY.hasAccount(offlinePlayer);
+    }
+
+    public static boolean hasEnoughBalance(String playerName, double amount) {
+        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(PlayerFetcher.getPlayerUniqueId(playerName));
+        return ECONOMY.getBalance(offlinePlayer) >= amount;
+
     }
     //endregion
 }

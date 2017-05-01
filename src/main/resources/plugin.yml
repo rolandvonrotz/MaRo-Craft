@@ -3,7 +3,7 @@ name: MaRo-Craft
 author: Rotzloch
 main: me.rotzloch.marocraft.Main
 version: 1.1-SNAPSHOT
-depend: [WorldGuard, WorldEdit]
+depend: [Vault, WorldGuard, WorldEdit]
 commands:
   land:
     description: Hauptbefehl fuer GSManagement

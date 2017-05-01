@@ -18,12 +18,13 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import me.rotzloch.marocraft.tasks.MarkerTask;
 import me.rotzloch.marocraft.util.Helper;
-import me.rotzloch.marocraft.util.NameFetcher;
+import me.rotzloch.marocraft.util.PlayerFetcher;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.World;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.SignChangeEvent;
 
 /**
  *
@@ -34,15 +35,13 @@ public class Land {
     private final World world;
     private final Player player;
     private final LocalPlayer localPlayer;
-    private final CommandSender sender;
 
     private final String regionName;
     private final Chunk chunk;
     private final ProtectedRegion region;
 
-    public Land(Player player, CommandSender sender, int x, int z) {
+    public Land(Player player, int x, int z) {
         this.player = player;
-        this.sender = sender;
         this.world = player.getWorld();
         this.regionName = "region_" + x + "_" + z;
         this.chunk = world.getChunkAt(x, z);
@@ -51,28 +50,50 @@ public class Land {
     }
 
     public void Buy() {
-        if (alreadyExist()) {
+        if (exist()) {
             Info();
             return;
         }
         setBuyFlagsAndOwner();
         Helper.getRegionManager(world).addRegion(region);
-        setCorners(50);
+        setMarker(50);
         player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Grundstück '%s' erfolgreich gekauft.\n%s %s wurden deinem Konto abgezogen!", regionName, "100", "MaRo-Coins"));
     }
 
     public void Sell() {
-        if (!alreadyExist() || !isOwner()) {
+        if (!exist() || !isOwner()) {
             player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Du kannst nur Grundstücke verkaufen, die dir gehören!"));
             return;
         }
         Helper.getRegionManager(world).removeRegion(regionName);
-        setCorners(76);
+        setMarker(76);
         player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Grundstück '%s' erfolgreich verkauft.\n%s %s wurden deinem Konto gutgeschrieben!", regionName, "100", "MaRo-Coins"));
     }
 
+    public void SellBySign(SignChangeEvent event) {
+        if (exist() && isOwner()) {
+            event.setLine(0, ChatColor.DARK_BLUE + "[L-SELL]");
+            event.setLine(2, regionName);
+            event.setLine(3, player.getName());
+            Bukkit.broadcastMessage(Helper.TRANSLATE.getText("Grundstück '%s' wird von '%s' zum Verkauf angeboten.", regionName, player.getName()));
+        }
+    }
+
+    public boolean BuyBySign(String playername, int buyPrice) {
+        if (isOwner()) {
+            player.sendMessage(ChatColor.RED + Helper.TRANSLATE.getText("Du kannst dein eigenes Grundstück nicht kaufen!"));
+            return false;
+        }
+        UUID currentOwner = region.getOwners().getUniqueIds().stream().findFirst().orElse(null);
+        region.getOwners().removePlayer(currentOwner);
+        region.getMembers().clear();
+        region.getOwners().addPlayer(localPlayer);
+        Bukkit.broadcastMessage(Helper.TRANSLATE.getText("Grundstück '%s' wurde von '%s' gekauft.", regionName, player.getName()));
+        return true;
+    }
+
     public void Info() {
-        if (!alreadyExist()) {
+        if (!exist()) {
             player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Grundstück %s gehört niemandem.\nDu kannst es kaufen für %s %s!", regionName, "100", "MaRo-Coins"));
             return;
         }
@@ -86,21 +107,21 @@ public class Land {
     }
 
     public void Lock() {
-        if (alreadyExist() && isOwner()) {
+        if (exist() && isOwner()) {
             region.setFlag(DefaultFlag.USE, State.DENY);
             player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Grundstück '%s' wurde gesperrt.", regionName));
         }
     }
 
     public void Unlock() {
-        if (alreadyExist() && isOwner()) {
+        if (exist() && isOwner()) {
             region.setFlag(DefaultFlag.USE, State.ALLOW);
             player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Grundstück '%s' wurde entsperrt.", regionName));
         }
     }
 
     public void Mobs(boolean spawn) {
-        if (alreadyExist() && isOwner()) {
+        if (exist() && isOwner()) {
             region.setFlag(DefaultFlag.MOB_SPAWNING, spawn ? State.ALLOW : State.DENY);
             if (spawn) {
                 player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Auf dem Grundstück '%s' können nun Mobs spawnen.", regionName));
@@ -111,15 +132,15 @@ public class Land {
     }
 
     public void AddMember(String playerName) {
-        if (alreadyExist() && isOwner()) {
-            region.getMembers().addPlayer(playerName);
+        if (exist() && isOwner()) {
+            region.getMembers().addPlayer(PlayerFetcher.getPlayerUniqueId(playerName));
             player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Spieler '%s' wurde dem Grundstück '%s' hinzugefügt.", playerName, regionName));
         }
     }
 
     public void RemoveMember(String playerName) {
-        if (alreadyExist() && isOwner()) {
-            region.getMembers().removePlayer(playerName);
+        if (exist() && isOwner()) {
+            region.getMembers().removePlayer(PlayerFetcher.getPlayerUniqueId(playerName));
             player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Spieler '%s' wurde vom Grundstück '%s' entfernt.", playerName, regionName));
         }
     }
@@ -127,7 +148,7 @@ public class Land {
     public void List() {
         player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Folgende GS besitzt du:\n"));
         player.sendMessage("-----------------------");
-        Helper.PLUGIN.getServer().getWorlds().stream().forEach(w -> list(w));
+        Bukkit.getWorlds().stream().forEach(w -> list(w));
     }
 
     private void list(World world) {
@@ -140,8 +161,8 @@ public class Land {
 
     public void Help() {
         String help = ChatColor.GOLD + "MaRo-Craft Land Help (/land help): \n";
-        help += ChatColor.YELLOW + "-----------------------\n";
-        help += ChatColor.GREEN + "/land buy -> GS kaufen.\n";
+        help += ChatColor.YELLOW + "-----------------------\n" + ChatColor.GREEN;
+        help += "/land buy -> GS kaufen.\n";
         help += "/land sell -> GS verkaufen.\n";
         help += "/land add <Playername> -> Spieler als Member hinzufügen.\n";
         help += "/land remove <Playername> -> Spieler als Member entfernen.\n";
@@ -155,7 +176,7 @@ public class Land {
 
     private String getPlayerNames(Set<UUID> uuids) {
         return uuids.stream()
-                .map(NameFetcher::getPlayerName)
+                .map(PlayerFetcher::getPlayerName)
                 .collect(Collectors.joining(","));
     }
 
@@ -171,7 +192,7 @@ public class Land {
     }
 
     private ProtectedRegion getRegion() {
-        if (alreadyExist()) {
+        if (exist()) {
             return Helper.getRegionManager(world).getRegion(regionName);
         }
         CuboidSelection selection = new CuboidSelection(world,
@@ -182,7 +203,7 @@ public class Land {
                 selection.getNativeMaximumPoint().toBlockVector());
     }
 
-    private boolean alreadyExist() {
+    private boolean exist() {
         return Helper.getRegionManager(world).hasRegion(regionName);
     }
 
@@ -190,8 +211,10 @@ public class Land {
         return region.getOwners().contains(localPlayer);
     }
 
-    private void setCorners(int cornerID) {
-        MarkerTask task = new MarkerTask(world, chunk, cornerID);
-        Helper.StartDelayedTask(task, 1);
+    private void setMarker(int markerId) {
+        if (!player.hasPermission("marocraft.land.nomarker")) {
+            MarkerTask task = new MarkerTask(world, chunk, markerId);
+            Helper.StartDelayedTask(task, 1);
+        }
     }
 }

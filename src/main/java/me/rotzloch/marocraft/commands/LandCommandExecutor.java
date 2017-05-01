@@ -47,16 +47,20 @@ public class LandCommandExecutor implements CommandExecutor {
         int chunkX = player.getLocation().getChunk().getX();
         int chunkZ = player.getLocation().getChunk().getZ();
 
-        Land land = new Land(player, sender, chunkX, chunkZ);
+        Land land = new Land(player, chunkX, chunkZ);
 
         switch (action) {
             case KAUFEN:
             case BUY:
-                land.Buy();
+                if (player.hasPermission("marocraft.land.buy")) {
+                    land.Buy();
+                }
                 break;
             case VERKAUFEN:
             case SELL:
-                land.Sell();
+                if (player.hasPermission("marocraft.land.sell")) {
+                    land.Sell();
+                }
                 break;
             case INFO:
                 land.Info();
