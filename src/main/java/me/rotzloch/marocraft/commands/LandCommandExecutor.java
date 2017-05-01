@@ -6,8 +6,8 @@
  */
 package me.rotzloch.marocraft.commands;
 
-import me.rotzloch.marocraft.util.Helper;
 import me.rotzloch.marocraft.land.Land;
+import me.rotzloch.marocraft.util.Helper;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -73,7 +73,15 @@ public class LandCommandExecutor implements CommandExecutor {
             case REMOVE:
                 land.RemoveMember(args[1]);
                 break;
-
+            case MOBS:
+                land.Mobs(Boolean.parseBoolean(args[1]));
+                break;
+            case LIST:
+                land.List();
+                break;
+            default:
+                land.Help();
+                break;
         }
 
         return true;

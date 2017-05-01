@@ -96,6 +96,17 @@ public class Land {
         }
     }
 
+    public void Mobs(boolean spawn) {
+        if (alreadyExist() && isOwner()) {
+            region.setFlag(DefaultFlag.MOB_SPAWNING, spawn ? State.ALLOW : State.DENY);
+            if (spawn) {
+                player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Auf dem Grundstück '%s' können nun Mobs spawnen.", regionName));
+            } else {
+                player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Auf dem Grundstück '%s' können nun keine Mobs spawnen.", regionName));
+            }
+        }
+    }
+
     public void AddMember(String playerName) {
         if (alreadyExist() && isOwner()) {
             region.getMembers().addPlayer(playerName);
@@ -108,6 +119,35 @@ public class Land {
             region.getMembers().removePlayer(playerName);
             player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Spieler '%s' wurde vom Grundstück '%s' entfernt.", playerName, regionName));
         }
+    }
+
+    public void List() {
+        player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Folgende GS besitzt du:\n"));
+        player.sendMessage("-----------------------");
+        Helper.PLUGIN.getServer().getWorlds().stream().forEach(w -> list(w));
+    }
+
+    private void list(World world) {
+        Helper.getRegionManager(world).getRegions().forEach((rn, r) -> {
+            if (r.isOwner(localPlayer)) {
+                player.sendMessage(ChatColor.GREEN + "- " + world.getName() + " -> " + rn);
+            }
+        });
+    }
+
+    public void Help() {
+        String help = ChatColor.GOLD + "MaRo-Craft Land Help (/land help): \n";
+        help += ChatColor.YELLOW + "-----------------------\n";
+        help += ChatColor.GREEN + "/land buy -> GS kaufen.\n";
+        help += "/land sell -> GS verkaufen.\n";
+        help += "/land add <Playername> -> Spieler als Member hinzufügen.\n";
+        help += "/land remove <Playername> -> Spieler als Member entfernen.\n";
+        help += "/land lock -> GS Sperren (Türen, Knöpfe, Schalter).\n";
+        help += "/land unlock -> GS Entsperren.\n";
+        help += "/land mobs <true/false> -> Mob-Spawning On/Off\n";
+        help += "/land list -> Zeigt eine Liste deiner Grundstücke an.\n";
+        help += "/land info -> GS Information.\n";
+        player.sendMessage(Helper.TRANSLATE.getText(help));
     }
 
     private String getPlayerNames(Set<UUID> uuids) {
