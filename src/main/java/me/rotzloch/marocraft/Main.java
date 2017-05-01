@@ -34,7 +34,9 @@ public class Main extends JavaPlugin {
             }
             if (Helper.Config().getBoolean("config.Land.Enabled")) {
                 getCommand("land").setExecutor(new LandCommandExecutor());
-                Helper.RegisterListener(new LandListener());
+                if (Helper.Config().getBoolean("config.Land.SellBySign")) {
+                    Helper.RegisterListener(new LandListener());
+                }
             }
         } else {
             Helper.LogMessage(Level.SEVERE, String.format("Disabled due to no Vault dependency found!"));
