@@ -36,6 +36,12 @@ public class LandCommandExecutor implements CommandExecutor {
             return true;
         }
         Player player = (Player) sender;
+
+        if (Helper.Config().getStringList("config.Land.IgnoreWorlds").contains(player.getWorld().getName())) {
+            player.sendMessage(Helper.TRANSLATE.getText("Dieser Befehl ist in dieser Welt nicht erlaubt."));
+            return true;
+        }
+
         Action action;
         try {
             action = Action.valueOf(args[0].toUpperCase());
