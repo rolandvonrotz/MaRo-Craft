@@ -58,6 +58,7 @@ public class Helper {
         Config().addDefault("config.ItemStacker.ItemPerStack", 256);
 
         Config().addDefault("config.Land.Enabled", true);
+        Config().addDefault("config.Land.FirstGSForFree", true);
         Config().addDefault("config.Land.BaseBuyPrice", 200);
         Config().addDefault("config.Land.AddBuyPricePerGS", 50);
         Config().addDefault("config.Land.TaxEnabled", true);
@@ -130,6 +131,13 @@ public class Helper {
         OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(PlayerFetcher.getPlayerUniqueId(playerName));
         return ECONOMY.getBalance(offlinePlayer) >= amount;
 
+    }
+
+    public static String getCurrencyName(double amount) {
+        if (amount > 1) {
+            return ECONOMY.currencyNamePlural();
+        }
+        return ECONOMY.currencyNameSingular();
     }
     //endregion
 }

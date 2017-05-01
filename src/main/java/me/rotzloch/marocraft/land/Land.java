@@ -22,6 +22,7 @@ import me.rotzloch.marocraft.util.PlayerFetcher;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.SignChangeEvent;
@@ -35,10 +36,15 @@ public class Land {
     private final World world;
     private final Player player;
     private final LocalPlayer localPlayer;
+    private final OfflinePlayer currentOwner;
 
     private final String regionName;
     private final Chunk chunk;
     private final ProtectedRegion region;
+
+    private final double price;
+    private double buyPrice;
+    private double sellPrice;
 
     public Land(Player player, int x, int z) {
         this.player = player;
@@ -47,6 +53,9 @@ public class Land {
         this.chunk = world.getChunkAt(x, z);
         this.localPlayer = Helper.getWorldGuard().wrapPlayer(player);
         this.region = getRegion();
+        this.price = Helper.Config().getInt("config.Land.BaseBuyPrice");
+        this.currentOwner = exist() ? getCurrentOwner() : null;
+        calculatePrices();
     }
 
     public void Buy() {
@@ -54,20 +63,26 @@ public class Land {
             Info();
             return;
         }
+        if (!Helper.hasEnoughBalance(player.getName(), buyPrice)) {
+            player.sendMessage(ChatColor.RED + Helper.TRANSLATE.getText("Dieses Grundstück ist zu teuer für dich.\nEs kostet: %s %s", buyPrice, Helper.getCurrencyName(buyPrice)));
+            return;
+        }
+        Helper.ECONOMY.withdrawPlayer(player, buyPrice);
         setBuyFlagsAndOwner();
         Helper.getRegionManager(world).addRegion(region);
         setMarker(50);
-        player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Grundstück '%s' erfolgreich gekauft.\n%s %s wurden deinem Konto abgezogen!", regionName, "100", "MaRo-Coins"));
+        player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Grundstück '%s' erfolgreich gekauft.\n%s %s wurden deinem Konto abgezogen!", regionName, buyPrice, Helper.getCurrencyName(buyPrice)));
     }
 
     public void Sell() {
         if (!exist() || !isOwner()) {
-            player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Du kannst nur Grundstücke verkaufen, die dir gehören!"));
+            player.sendMessage(ChatColor.RED + Helper.TRANSLATE.getText("Du kannst nur Grundstücke verkaufen, die dir gehören!"));
             return;
         }
+        Helper.ECONOMY.depositPlayer(player, sellPrice);
         Helper.getRegionManager(world).removeRegion(regionName);
         setMarker(76);
-        player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Grundstück '%s' erfolgreich verkauft.\n%s %s wurden deinem Konto gutgeschrieben!", regionName, "100", "MaRo-Coins"));
+        player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Grundstück '%s' erfolgreich verkauft.\n%s %s wurden deinem Konto gutgeschrieben!", regionName, sellPrice, Helper.getCurrencyName(sellPrice)));
     }
 
     public void SellBySign(SignChangeEvent event) {
@@ -84,8 +99,13 @@ public class Land {
             player.sendMessage(ChatColor.RED + Helper.TRANSLATE.getText("Du kannst dein eigenes Grundstück nicht kaufen!"));
             return false;
         }
-        UUID currentOwner = region.getOwners().getUniqueIds().stream().findFirst().orElse(null);
-        region.getOwners().removePlayer(currentOwner);
+        if (!Helper.hasEnoughBalance(player.getName(), buyPrice)) {
+            player.sendMessage(ChatColor.RED + Helper.TRANSLATE.getText("Dieses Grundstück ist zu teuer für dich.\nEs kostet: %s %s", buyPrice, Helper.getCurrencyName(buyPrice)));
+            return false;
+        }
+        Helper.ECONOMY.withdrawPlayer(player, buyPrice);
+        Helper.ECONOMY.depositPlayer(currentOwner, buyPrice);
+        region.getOwners().removePlayer(currentOwner.getUniqueId());
         region.getMembers().clear();
         region.getOwners().addPlayer(localPlayer);
         Bukkit.broadcastMessage(Helper.TRANSLATE.getText("Grundstück '%s' wurde von '%s' gekauft.", regionName, player.getName()));
@@ -94,7 +114,7 @@ public class Land {
 
     public void Info() {
         if (!exist()) {
-            player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Grundstück %s gehört niemandem.\nDu kannst es kaufen für %s %s!", regionName, "100", "MaRo-Coins"));
+            player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Grundstück %s gehört niemandem.\nDu kannst es kaufen für %s %s!", regionName, buyPrice, Helper.getCurrencyName(buyPrice)));
             return;
         }
         String text = Helper.TRANSLATE.getText("Grundstück '%s'\nBesitzer: %s\nMitglieder: %s\nFlags: %s->%s, %s->%s",
@@ -146,8 +166,8 @@ public class Land {
     }
 
     public void List() {
-        player.sendMessage(ChatColor.GREEN + Helper.TRANSLATE.getText("Folgende GS besitzt du:\n"));
-        player.sendMessage("-----------------------");
+        player.sendMessage(ChatColor.GOLD + Helper.TRANSLATE.getText("Folgende GS besitzt du:\n"));
+        player.sendMessage(ChatColor.YELLOW + "-----------------------");
         Bukkit.getWorlds().stream().forEach(w -> list(w));
     }
 
@@ -216,5 +236,33 @@ public class Land {
             MarkerTask task = new MarkerTask(world, chunk, markerId);
             Helper.StartDelayedTask(task, 1);
         }
+    }
+
+    private int countGs() {
+        return Bukkit.getWorlds().stream()
+                .map(Helper::getRegionManager)
+                .mapToInt(rm -> rm.getRegionCountOfPlayer(localPlayer))
+                .sum();
+    }
+
+    private void calculatePrices() {
+        int count = countGs();
+        if (count == 0 && Helper.Config().getBoolean("config.Land.FirstGSForFree")) {
+            buyPrice = 0;
+            sellPrice = 0;
+            return;
+        } else if (count > 0 && Helper.Config().getBoolean("config.Land.FirstGSForFree")) {
+            count -= 1;
+        }
+        int additionalPrice = count * Helper.Config().getInt("config.Land.AddBuyPricePerGS");
+        buyPrice = price + additionalPrice;
+        sellPrice = (price + additionalPrice) * 0.8;
+    }
+
+    private OfflinePlayer getCurrentOwner() {
+        UUID playerId = region.getOwners().getUniqueIds().stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Region '" + regionName + "' has no owner!"));
+        return Bukkit.getOfflinePlayer(playerId);
     }
 }
