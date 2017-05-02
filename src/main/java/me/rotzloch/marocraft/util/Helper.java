@@ -101,6 +101,14 @@ public class Helper {
     public static void StartDelayedTask(Runnable run, long timeTicks) {
         Bukkit.getScheduler().runTaskLater(PLUGIN, run, timeTicks);
     }
+
+    public static void StopAsyncTask(int taskId) {
+        Bukkit.getScheduler().cancelTask(taskId);
+    }
+
+    public static int StartAsyncTask(Runnable task, long timeTicks) {
+        return Bukkit.getScheduler().runTaskTimerAsynchronously(PLUGIN, task, timeTicks, timeTicks).getTaskId();
+    }
     //endregion
 
     //region Economy

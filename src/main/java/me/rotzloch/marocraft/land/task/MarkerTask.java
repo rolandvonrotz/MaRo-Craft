@@ -4,7 +4,7 @@
  * Unauthorized copying of this file, via any medium, is strictly prohibited
  * by law. This file is proprietary and confidential.
  */
-package me.rotzloch.marocraft.tasks;
+package me.rotzloch.marocraft.land.task;
 
 import org.bukkit.Chunk;
 import org.bukkit.World;

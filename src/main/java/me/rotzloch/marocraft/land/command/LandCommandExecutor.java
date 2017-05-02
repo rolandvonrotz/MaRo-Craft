@@ -4,7 +4,7 @@
  * Unauthorized copying of this file, via any medium, is strictly prohibited
  * by law. This file is proprietary and confidential.
  */
-package me.rotzloch.marocraft.commands;
+package me.rotzloch.marocraft.land.command;
 
 import me.rotzloch.marocraft.land.Land;
 import me.rotzloch.marocraft.util.Helper;

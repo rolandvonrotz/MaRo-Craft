@@ -16,7 +16,7 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import me.rotzloch.marocraft.tasks.MarkerTask;
+import me.rotzloch.marocraft.land.task.MarkerTask;
 import me.rotzloch.marocraft.util.Helper;
 import me.rotzloch.marocraft.util.PlayerFetcher;
 import org.bukkit.Bukkit;
@@ -168,7 +168,7 @@ public class Land {
     public void List() {
         player.sendMessage(ChatColor.GOLD + Helper.TRANSLATE.getText("Folgende GS besitzt du:\n"));
         player.sendMessage(ChatColor.YELLOW + "-----------------------");
-        Bukkit.getWorlds().stream().forEach(w -> list(w));
+        Bukkit.getWorlds().stream().forEach(this::list);
     }
 
     private void list(World world) {
@@ -239,6 +239,10 @@ public class Land {
     }
 
     private int countGs() {
+        return CountGs(localPlayer);
+    }
+
+    public static int CountGs(LocalPlayer localPlayer) {
         return Bukkit.getWorlds().stream()
                 .map(Helper::getRegionManager)
                 .mapToInt(rm -> rm.getRegionCountOfPlayer(localPlayer))

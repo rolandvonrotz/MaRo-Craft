@@ -4,7 +4,7 @@
  * Unauthorized copying of this file, via any medium, is strictly prohibited
  * by law. This file is proprietary and confidential.
  */
-package me.rotzloch.marocraft.listener;
+package me.rotzloch.marocraft.itemstacker.listener;
 
 import java.util.List;
 import me.rotzloch.marocraft.util.Helper;

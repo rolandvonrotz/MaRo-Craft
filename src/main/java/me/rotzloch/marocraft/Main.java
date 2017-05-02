@@ -7,9 +7,10 @@
 package me.rotzloch.marocraft;
 
 import java.util.logging.Level;
-import me.rotzloch.marocraft.commands.LandCommandExecutor;
-import me.rotzloch.marocraft.listener.ItemStackListener;
-import me.rotzloch.marocraft.listener.LandListener;
+import me.rotzloch.marocraft.itemstacker.listener.ItemStackListener;
+import me.rotzloch.marocraft.land.command.LandCommandExecutor;
+import me.rotzloch.marocraft.land.listener.LandListener;
+import me.rotzloch.marocraft.land.listener.TaxListener;
 import me.rotzloch.marocraft.util.Helper;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -36,6 +37,9 @@ public class Main extends JavaPlugin {
                 getCommand("land").setExecutor(new LandCommandExecutor());
                 if (Helper.Config().getBoolean("config.Land.SellBySign")) {
                     Helper.RegisterListener(new LandListener());
+                }
+                if (Helper.Config().getBoolean("config.Land.TaxEnabled")) {
+                    Helper.RegisterListener(new TaxListener());
                 }
             }
         } else {
