@@ -7,6 +7,7 @@
 package me.rotzloch.marocraft;
 
 import java.util.logging.Level;
+import me.rotzloch.marocraft.blockbreakingreward.listener.BlockBreakingRewardListener;
 import me.rotzloch.marocraft.itemstacker.listener.ItemStackListener;
 import me.rotzloch.marocraft.land.command.LandCommandExecutor;
 import me.rotzloch.marocraft.land.listener.LandListener;
@@ -41,6 +42,9 @@ public class Main extends JavaPlugin {
                 if (Helper.Config().getBoolean("config.Land.TaxEnabled")) {
                     Helper.RegisterListener(new TaxListener());
                 }
+            }
+            if (Helper.Config().getBoolean("config.BlockBreakingReward.Enabled")) {
+                Helper.RegisterListener(new BlockBreakingRewardListener());
             }
         } else {
             Helper.LogMessage(Level.SEVERE, String.format("Disabled due to no Vault dependency found!"));

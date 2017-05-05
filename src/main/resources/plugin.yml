@@ -2,7 +2,7 @@
 name: MaRo-Craft
 author: Rotzloch
 main: me.rotzloch.marocraft.Main
-version: 1.1-SNAPSHOT
+version: 1.1.1-SNAPSHOT
 depend: [Vault, WorldGuard, WorldEdit]
 commands:
   land:

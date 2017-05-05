@@ -8,12 +8,16 @@ package me.rotzloch.marocraft.util;
 
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.managers.RegionManager;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static java.util.stream.Collectors.toList;
 import me.rotzloch.marocraft.Main;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -66,6 +70,15 @@ public class Helper {
         Config().addDefault("config.Land.TaxTimeSeconds", 900);
         Config().addDefault("config.Land.SellBySign", true);
         Config().addDefault("config.Land.IgnoreWorlds", Collections.emptyList());
+
+        Config().addDefault("config.BlockBreakingReward.Enabled", true);
+        Config().addDefault("config.BlockBreakingReward.Minutes", 2);
+        Config().addDefault("config.BlockBreakingReward.AmountPerBlock", 0.1);
+        List<Material> defaultIgnoreTypes = Arrays.asList(Material.AIR, Material.BED,
+                Material.BOAT, Material.SIGN, Material.SNOW, Material.TORCH,
+                Material.REDSTONE, Material.REDSTONE_WIRE,
+                Material.REDSTONE_TORCH_ON, Material.REDSTONE_TORCH_OFF);
+        Config().addDefault("config.BlockBreakingReward.IgnoreTypes", defaultIgnoreTypes.stream().map(Material::name).collect(toList()));
 
         Config().options().copyDefaults(true);
         PLUGIN.saveConfig();
