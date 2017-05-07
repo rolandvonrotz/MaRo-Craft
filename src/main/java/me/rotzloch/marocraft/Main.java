@@ -7,6 +7,7 @@
 package me.rotzloch.marocraft;
 
 import java.util.logging.Level;
+import me.rotzloch.marocraft.autoreplant.listener.AutoReplantListener;
 import me.rotzloch.marocraft.blockbreakingreward.listener.BlockBreakingRewardListener;
 import me.rotzloch.marocraft.itemstacker.listener.ItemStackListener;
 import me.rotzloch.marocraft.land.command.LandCommandExecutor;
@@ -45,6 +46,9 @@ public class Main extends JavaPlugin {
             }
             if (Helper.Config().getBoolean("config.BlockBreakingReward.Enabled")) {
                 Helper.RegisterListener(new BlockBreakingRewardListener());
+            }
+            if (Helper.Config().getBoolean("config.AutoReplant.Enabled")) {
+                Helper.RegisterListener(new AutoReplantListener());
             }
         } else {
             Helper.LogMessage(Level.SEVERE, String.format("Disabled due to no Vault dependency found!"));

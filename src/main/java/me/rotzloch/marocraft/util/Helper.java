@@ -80,6 +80,9 @@ public class Helper {
                 Material.REDSTONE_TORCH_ON, Material.REDSTONE_TORCH_OFF);
         Config().addDefault("config.BlockBreakingReward.IgnoreTypes", defaultIgnoreTypes.stream().map(Material::name).collect(toList()));
 
+        Helper.Config().addDefault("config.AutoReplant.Enabled", true);
+        Helper.Config().addDefault("config.AutoReplant.ReplantTicksWait", 40);
+
         Config().options().copyDefaults(true);
         PLUGIN.saveConfig();
     }
