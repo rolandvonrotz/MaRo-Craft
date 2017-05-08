@@ -31,7 +31,7 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        if (Helper.setupEconomy()) {
+        if (Helper.setupEconomy() && Helper.setupDatabase()) {
             if (Helper.Config().getBoolean("config.ItemStacker.Enabled")) {
                 Helper.RegisterListener(new ItemStackListener());
             }
@@ -50,6 +50,9 @@ public class Main extends JavaPlugin {
             if (Helper.Config().getBoolean("config.AutoReplant.Enabled")) {
                 Helper.RegisterListener(new AutoReplantListener());
             }
+            if (Helper.Config().getBoolean("config.RewardSigns.Enabled")) {
+                
+            }
         } else {
             Helper.LogMessage(Level.SEVERE, String.format("Disabled due to no Vault dependency found!"));
             Bukkit.getPluginManager().disablePlugin(this);
@@ -61,4 +64,7 @@ public class Main extends JavaPlugin {
 
     }
 
+    public void InstallDDL() {
+        installDDL();
+    }
 }

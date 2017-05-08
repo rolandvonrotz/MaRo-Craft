@@ -14,7 +14,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.toList;
+import javax.persistence.PersistenceException;
 import me.rotzloch.marocraft.Main;
+import me.rotzloch.marocraft.rewardsigns.classes.RewardLock;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -162,6 +164,18 @@ public class Helper {
             return ECONOMY.currencyNamePlural();
         }
         return ECONOMY.currencyNameSingular();
+    }
+    //endregion
+
+    //region Database
+    public static boolean setupDatabase() {
+        try {
+            PLUGIN.getDatabase().find(RewardLock.class).findRowCount();
+        } catch (PersistenceException ex) {
+            LogMessage("Installing database for " + PLUGIN.getDescription().getName() + " due to first time usage");
+            PLUGIN.InstallDDL();
+        }
+        return true;
     }
     //endregion
 }
