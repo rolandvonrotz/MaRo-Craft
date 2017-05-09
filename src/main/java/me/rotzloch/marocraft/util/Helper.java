@@ -16,13 +16,15 @@ import java.util.logging.Logger;
 import static java.util.stream.Collectors.toList;
 import javax.persistence.PersistenceException;
 import me.rotzloch.marocraft.Main;
-import me.rotzloch.marocraft.rewardsigns.classes.RewardLock;
+import me.rotzloch.marocraft.rewardsigns.entity.RewardLock;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -82,8 +84,10 @@ public class Helper {
                 Material.REDSTONE_TORCH_ON, Material.REDSTONE_TORCH_OFF);
         Config().addDefault("config.BlockBreakingReward.IgnoreTypes", defaultIgnoreTypes.stream().map(Material::name).collect(toList()));
 
-        Helper.Config().addDefault("config.AutoReplant.Enabled", true);
-        Helper.Config().addDefault("config.AutoReplant.ReplantTicksWait", 40);
+        Config().addDefault("config.AutoReplant.Enabled", true);
+        Config().addDefault("config.AutoReplant.ReplantTicksWait", 40);
+
+        Config().addDefault("config.RewardSigns.Enabled", true);
 
         Config().options().copyDefaults(true);
         PLUGIN.saveConfig();
@@ -178,4 +182,8 @@ public class Helper {
         return true;
     }
     //endregion
+
+    public static void NoPermission(Player player) {
+        player.sendMessage(ChatColor.RED + TRANSLATE.getText("Keine Berechtigung für diesen Befehl!"));
+    }
 }

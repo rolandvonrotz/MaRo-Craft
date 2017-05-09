@@ -6,6 +6,8 @@
  */
 package me.rotzloch.marocraft;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import me.rotzloch.marocraft.autoreplant.listener.AutoReplantListener;
 import me.rotzloch.marocraft.blockbreakingreward.listener.BlockBreakingRewardListener;
@@ -13,6 +15,8 @@ import me.rotzloch.marocraft.itemstacker.listener.ItemStackListener;
 import me.rotzloch.marocraft.land.command.LandCommandExecutor;
 import me.rotzloch.marocraft.land.listener.LandListener;
 import me.rotzloch.marocraft.land.listener.TaxListener;
+import me.rotzloch.marocraft.rewardsigns.entity.RewardLock;
+import me.rotzloch.marocraft.rewardsigns.listener.RewardSignListener;
 import me.rotzloch.marocraft.util.Helper;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -51,7 +55,7 @@ public class Main extends JavaPlugin {
                 Helper.RegisterListener(new AutoReplantListener());
             }
             if (Helper.Config().getBoolean("config.RewardSigns.Enabled")) {
-                
+                Helper.RegisterListener(new RewardSignListener());
             }
         } else {
             Helper.LogMessage(Level.SEVERE, String.format("Disabled due to no Vault dependency found!"));
@@ -62,6 +66,11 @@ public class Main extends JavaPlugin {
     @Override
     public void onDisable() {
 
+    }
+
+    @Override
+    public List<Class<?>> getDatabaseClasses() {
+        return Arrays.asList(RewardLock.class);
     }
 
     public void InstallDDL() {
