@@ -24,7 +24,10 @@ import org.bukkit.entity.Player;
 public class RewardLock implements Serializable {
 
     @Id
-    private String id;
+    private UUID id;
+
+    @NotNull
+    private String rewardId;
 
     @NotNull
     private UUID playerId;
@@ -33,21 +36,30 @@ public class RewardLock implements Serializable {
     private Long lockEnd;
 
     public RewardLock() {
-        this(null, null, null);
+        this(null, null, null, null);
     }
 
-    public RewardLock(String id, UUID playerId, Long lockEnd) {
+    public RewardLock(UUID id, String rewardId, UUID playerId, Long lockEnd) {
         this.id = id;
+        this.rewardId = rewardId;
         this.playerId = playerId;
         this.lockEnd = lockEnd;
     }
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(UUID id) {
         this.id = id;
+    }
+
+    public String getRewardId() {
+        return rewardId;
+    }
+
+    public void setRewardId(String rewardId) {
+        this.rewardId = rewardId;
     }
 
     public UUID getPlayerId() {

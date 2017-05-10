@@ -7,6 +7,7 @@
 package me.rotzloch.marocraft.rewardsigns;
 
 import java.time.Instant;
+import java.util.UUID;
 import me.rotzloch.marocraft.rewardsigns.entity.RewardLock;
 import me.rotzloch.marocraft.util.Helper;
 import org.bukkit.ChatColor;
@@ -36,7 +37,7 @@ public class Reward {
         }
         RewardLock alreadyLocked = Helper.PLUGIN.getDatabase().find(RewardLock.class).where()
                 .eq("playerId", player.getUniqueId())
-                .eq("id", getId())
+                .eq("rewardId", getRewardId())
                 .ge("lockEnd", Instant.now().toEpochMilli())
                 .findUnique();
         if (alreadyLocked != null) {
@@ -44,7 +45,8 @@ public class Reward {
             return;
         }
         String[] rewards = reward.split("-");
-        RewardLock rewardLock = new RewardLock(getId(),
+        RewardLock rewardLock = new RewardLock(UUID.randomUUID(),
+                getRewardId(),
                 player.getUniqueId(),
                 Instant.now().plusSeconds(timeLock).toEpochMilli());
 
@@ -59,7 +61,7 @@ public class Reward {
         Helper.PLUGIN.getDatabase().save(rewardLock);
     }
 
-    private String getId() {
+    private String getRewardId() {
         return new StringBuilder().append("[REWARD]#")
                 .append(reward).append("#")
                 .append(timeLock).append("#")
