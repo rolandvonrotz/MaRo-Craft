@@ -9,3 +9,46 @@ commands:
   land:
     description: Hauptbefehl fuer GSManagement
     usage: Gib /land help ein, um mehr Informationen zu bekommen.
+
+permissions:
+    marocraft.*:
+        description: Gives access to all marocraft permissions.
+        children:
+            marocraft.land.nomarker: true
+            marocraft.land.buy: true
+            marocraft.land.sell: true
+            marocraft.rewardSign.create: true
+            marocraft.rewardSign.use: true
+    
+    marocraft.land.*:
+        description: Gives access to all residence permissions.
+        children:
+            marocraft.land.nomarker: true
+            marocraft.land.buy: true
+            marocraft.land.sell: true
+            
+    marocraft.rewardSign.*:
+        description: Gives access to all reward sign permissions.
+        children:
+            marocraft.rewardSign.create: true
+            marocraft.rewardSign.use: true
+            
+    marocraft.land.nomarker:
+        description: Buy & Sell residences without markers.
+        default: false
+    
+    marocraft.land.buy:
+        description: Buy residences
+        default: false
+    
+    marocraft.land.sell:
+        description: Sell residences
+        default: false
+    
+    marocraft.rewardSign.create:
+        description: Can create reward signs. Should only give to admins/mods.
+        default: false
+        
+    marocraft.rewardSign.use: 
+        description: Can use reward signs.
+        default: false
